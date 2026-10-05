@@ -3,7 +3,7 @@ Author: Mohamed Sabek
 URL: https://universe.roboflow.com/mohamed-sabek-6zmr6/excavators-cwlh0
 Version used: 3 (640×640, no augmentation)
 Licence: CC BY 4.0
-Date accessed: 5-oct-26
+Date accessed: 5-oct-26, 4:54pm
 Classes: dump truck, EXCAVATORS, wheel loader
 Image counts: train: 2245, valid: 267, test: 144
 How to get it: Visit URL cited above. Sign in Roboflow. Click on Dataset. Choose V3. Click on Download Dataset. Again click on Download Dataset (ZIP file). Select format : YOLOv11. Finally tick Download Zip to computer and Continue.
