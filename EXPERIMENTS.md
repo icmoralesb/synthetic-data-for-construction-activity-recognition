@@ -1,9 +1,9 @@
 ## 2026-10-06 - Evaluation of YOLOv8s, 5 epochs
 
 **Setup**
-- Model: YOLOv8s (pretrained on COCO), run 'excavator_v8s_e5', weights 'best.pt'
-- Data: Excavators (Roboflow, v3, CC BY 4.0), validation split (267 images)
-- Device: Apple M4 Pro (MPS)
+- Model: YOLOv8s (pretrained on COCO), run `excavator_v8s_e5`, weights `best.pt`.
+- Data: Excavators (Roboflow, v3, CC BY 4.0), validation split (267 images).
+- Device: Apple M4 Pro (MPS).
 
 **Results**
 
@@ -15,9 +15,10 @@
 | wheel loader | 178       | 0.980 | 0.893 | 0.959 | 0.727    |
 
 **Observations**
-- EXACAVATOR class is the weakest one, with 36 instances.
-- Confusion matrix (default val threshold): the model finds almost every machine but the class is close to random. EXCAVATOR class predicted 52%, dump truck class predicted 33% and wheel loader 26% of the instances. On background thousands of false positives. Basically the model found the machines but guessing which machine it is. This behavior is largely due to low-confidence boxes (conf=0.001). On the other hand the mAP50=0.863 tell us that the model learnt machines with good results. 
-- Results of evaluation in detect mode show us that model learnt very well even though the training procedure was carried out over 5 epochs. Prediction over 84% and 4% of incorrectly labeling.
+- Precision (0.945) is much higher than recall (0.737): at its balanced threshold the model rarely gives false alarms but misses about a quarter of the machines. Dump truck has the lowest recall (0.622).
+- EXCAVATORS has the lowest mAP50 (0.797), but only 36 validation instances, so this estimate is noisy. The target class of the project is the minority class in this dataset.
+- Confusion matrix at the default val threshold (conf = 0.001): 52% of real excavators (19/36), 33% of dump trucks and 26% of wheel loaders were correctly classified, with thousands of background false positives. Probably caused by low-confidence boxes, since mAP50 (0.863) shows the confident predictions are mostly correct.
 
 **Next step**
-- Train longer with al least 50 epochs.
+- Count instances per class in the training split.
+- Retrain with identical settings except epochs = 50 and patience = 15, then compare with this run.
