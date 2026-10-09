@@ -1,4 +1,4 @@
-Name : Excavator Dataset
+Name: Excavator Dataset
 Author: Mohamed Sabek
 URL: https://universe.roboflow.com/mohamed-sabek-6zmr6/excavators-cwlh0
 Version used: 3 (640×640, no augmentation)
@@ -19,3 +19,9 @@ Citation: @misc{ excavators-cwlh0_dataset,
   month = { nov },
   note = { visited on 2026-10-05 },
 }
+
+Name: 15106480_1920_1080_50fps.mp4
+Source link: https://www.pexels.com/video/excavator-in-action-at-construction-site-35647503/
+Author: ValA
+License: Pexel license - Free
+Data accessed: 9-oct-26 2:24pm
