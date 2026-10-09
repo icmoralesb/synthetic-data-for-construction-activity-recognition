@@ -7,14 +7,15 @@
 - Device: Apple M4 Pro (MPS)
 
 **Observations**
-Video tracking of one (01) active excavator which is moving material from one side to another. The length of the video is 25 seconds with 1272 frames. The model detected:
+- One real excavator, continuously detected for the whole clip (no gaps, no class flicker).
+- ID switch: the excavator was id=1 from 0:00 to 0:14, then a second box (id=14) appeared from 0:14 to 0:19, and from 0:19 only id=14 remained. A machine-hours system would count two machines.
+- Cause to verify: duplicate box on the same excavator. Track IDs reached 14, which suggests many short-lived tracks, probably from low-confidence boxes (conf=0.1).
+- Inference: 2.2 ms per frame on MPS.
 
-- 0:00 to 0:14 : (01) excavators detected, id=1.
-- 0:14 to 0:19 : (02) excavators detected, id=1, id=14.
-- 0:19 to 0:25 : (01) excavators detected, id=14.
-
-As we can see, the model detected one additional machine during 2 seconds with 2 different id's. Moreover, the model never lost the track and zero class flicker. Time processing: 2.2ms per frame. 
- 
+**Next step**
+- Rerun with conf=0.25 and compare: does the ID switch disappear?
+- Repeat the test with the 50-epoch detector, since a stronger detector gives the tracker cleaner boxes.
+- If the switch remains, tune ByteTrack (track_buffer, match_thresh). 
 
 
 ## 2026-10-06 - Evaluation of YOLOv8s, 5 epochs
