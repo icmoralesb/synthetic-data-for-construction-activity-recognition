@@ -2,15 +2,13 @@
 
 **Can synthetic video teach a model to recognise what an excavator is doing on a real construction site?**
 
-> **Status:** Phase 0 — repository set-up and pretrained-pipeline sanity check.
-> Phase 1 (excavator detector, local training) is next.
+> **Status:** Phase 1 complete (tag `v0.1-phase1`): excavator detector,
+> ByteTrack tracking and a rule-based active/idle demo.
+> Next: Phase 3, the synthetic video pipeline in Blender.
 
 ---
 
 ## Motivation
-
-*(This is the first-person story that appears in my scholarship and supervisor
-outreach letters. The details below are true and are mine to tell.)*
 
 For more than ten years I worked in project control and cost engineering on
 major road-infrastructure projects in Colombia, including the Toyo and La
@@ -24,22 +22,33 @@ public-works transparency can rest on evidence instead of paperwork.
 
 ## Research questions
 
-1. Can action-recognition models trained mainly on synthetic, automatically
-   labelled video recognise excavator activities in **real** site footage?
-2. How much real labelled video can synthetic video replace while keeping
-   accuracy on real sites?
-3. Which synthetic factors — lighting, weather, camera viewpoint, background,
-   photorealism — reduce the synthetic-to-real gap the most?
-4. *(Exploratory)* Can generative video models add useful variation by
-   synthesising transitions between two keyframes?
+The December 2026 preprint answers questions 1 and 2 and gives a first answer
+to question 4. Question 5 belongs to the thesis stage.
+
+1. **Transfer.** Can video models trained mainly on Blender-generated,
+   automatically labelled clips recognise five excavator activities in real
+   site footage, and where do they fail?
+2. **Real-data savings.** Under a fixed training budget, how does accuracy on
+   real footage change when real clips replace synthetic ones, and how many
+   real labelled clips does a large synthetic set save?
+3. **What closes the gap.** Which generation factors matter most: domain
+   randomisation (viewpoint, lighting, weather, background, distractors) or
+   generative realism enhancement of the rendered clips?
+4. **Specialist or generalist.** On the same real test set, how does the
+   synthetic-trained model compare with a zero-shot vision-language model, and
+   with a pre-trained video model fine-tuned on real clips only, in accuracy,
+   speed and cost?
+5. **Activities as crews (thesis stage).** Does modelling an operation as
+   interacting resources, starting with an excavator and the trucks it loads,
+   recognise operation states better than separate machine models?
 
 ---
 
 ## Scope
 
-The first version studies **one machine — the excavator — and five
-activities**: digging, swinging, dumping, travelling and idle. Workers and
-other machines follow once this pipeline is proven.
+The first version studies **one hydraulic excavator and five activities**:
+digging, swinging, dumping, travelling and idle. The trucks it loads follow in
+the thesis, and workers and materials later.
 
 ---
 
@@ -53,86 +62,152 @@ Scenario design  →  Synthetic clips   →  Train models   →  Real-site test
         └──────────── adjust randomisation & realism ────────────────┘
 ```
 
-A small real labelled test set is mixed in during training to measure how
-much real data the synthetic clips can replace.
+Synthetic clips and a pool of real training clips are mixed under a fixed
+training budget. Every model is scored on the same held-out real test set.
 
 ---
 
 ## Method
 
-- **Baseline (this repo's current stage):** YOLO detection + ByteTrack
-  tracking, with simple motion rules to flag active vs. idle. This is the
-  foundation the Phase 1 excavator detector builds on.
-- **Main models (from Phase 5):** SlowFast, X3D and VideoMAE, pre-trained on
-  Kinetics and fine-tuned on synthetic excavator clips.
-- **Synthetic pipeline (Phase 3):** site scenes built in Blender with a rigged
-  excavator model and scripted activities; lighting, weather, camera angle and
-  background randomised; bounding boxes and per-frame activity labels exported
-  automatically — no manual labelling.
-- **Evaluation (Phase 4–5):** a small real test set (100–150 excavator clips,
-  labelled in CVAT) from public construction video. Train with increasing
-  shares of real data and measure frame- and video-level mean Average
-  Precision, per activity.
+- **Baseline (Phase 1, done):** YOLOv8s excavator detector, ByteTrack
+  tracking, and a motion rule that labels each moment as active or idle.
+- **Synthetic generator (Phase 3):** site scenes built in Blender with a
+  rigged excavator performing scripted work cycles. BlenderProc renders the
+  clips and exports per-frame labels (activity, bounding box, mask, joint
+  angles), so no manual labelling is needed. Camera viewpoint, lighting,
+  weather, terrain, background, motion blur and video compression are
+  randomised per clip. Target: about 2,000 clips of 2 to 4 seconds.
+- **Realism enhancement (research question 3):** a structure-conditioned
+  diffusion model (ControlNet approach) refines rendered frames while keeping
+  their labels.
+- **Recognition models (Phase 5):** X3D and VideoMAE, pre-trained on Kinetics
+  and fine-tuned on tracked excavator clips.
+- **Comparison models (research question 4):** a zero-shot vision-language
+  model run locally (for example Qwen2.5-VL), and a VideoMAE model fine-tuned
+  on real clips only.
+- **Evaluation:** one held-out real test set, split by source video. Macro-F1
+  over the five activities is the main metric. Every configuration runs with
+  at least three random seeds, reported as mean ± standard deviation, with 95%
+  bootstrap confidence intervals that resample whole source videos.
 
 ---
 
 ## Data
 
-| Stage | Data | Status |
+| Phase | Data | Status |
 |---|---|---|
-| Phase 0 (this commit) | Pretrained COCO model, public sample image | Done |
-| Phase 1 | Public construction images (SODA, MOCS) — to ground an excavator detector before any synthetic data exists | Next |
-| Phase 3 | Synthetic excavator clips, generated in Blender | Planned |
-| Phase 4 | 100–150 real excavator clips, labelled in CVAT | Planned |
+| Phase 0 | Pretrained COCO model, public sample image | Done |
+| Phase 1 | Excavators dataset (Roboflow Universe, version 3, CC BY 4.0), three classes: excavator, dump truck, wheel loader. Two public test videos (Pexels, Pixabay) for tracking and the active/idle rule | Done |
+| Phase 3 | About 2,000 synthetic excavator clips (2 to 4 s), generated in Blender | Planned |
+| Phase 4 | About 800 real clips (2 to 4 s) cut from at least 45 minutes of public video from 20 or more sources; activity start and end times labelled by hand; split by source video into about 400 test, 300 training-pool and 100 validation clips | Planned |
 
-All datasets are public, or generated synthetically. No real footage filmed
-by me is used without consent; identifiable individuals are avoided and faces
-are blurred where relevant.
+All data is public or synthetic. Real footage is used only when its licence
+allows research use, or with site permission. Identifiable people are avoided
+and faces are blurred where relevant. Video sources are listed in
+[EXPERIMENTS.md](EXPERIMENTS.md).
+
+---
+
+## Phase 1 results
+
+Full settings and observations for every run are in
+[EXPERIMENTS.md](EXPERIMENTS.md).
+
+**1. Excavator detector (6 Oct 2026).** YOLOv8s pretrained on COCO,
+fine-tuned for 5 epochs; validation split of 267 images.
+
+| Class | Instances | Precision | Recall | mAP50 | mAP50-95 |
+|---|---|---|---|---|---|
+| all | 426 | 0.945 | 0.737 | 0.863 | 0.630 |
+| EXCAVATORS | 36 | 0.884 | 0.694 | 0.797 | 0.532 |
+| dump truck | 212 | 0.971 | 0.622 | 0.832 | 0.630 |
+| wheel loader | 178 | 0.980 | 0.893 | 0.959 | 0.727 |
+
+The validation split holds only 36 excavator instances, so the excavator
+scores are noisy.
+
+**2. Tracking (9 Oct 2026).** ByteTrack on a 25-second public excavator
+video. The excavator was detected in every frame with no class flicker, but a
+duplicate box on the same machine created a second track ID for 5 seconds,
+and the track then continued under the new ID. A machine-hours count would
+have counted two machines.
+
+**3. Active/idle rule (14 Oct 2026).** The motion score is the change in the
+tracked box (centre, width and height) over half a second, divided by the box
+diagonal. Threshold τ = 0.02; minimum durations 1.5 s active and 2.0 s idle.
+On a 23.6-second fixed-camera clip of a working excavator, the rule labelled
+all scored time as active, with no false idle. Idle detection is not tested
+yet, because the clip has no idle period.
+
+**Open issues**
+- Retrain the detector for 50 epochs and compare with the 5-epoch run.
+- Duplicate boxes appeared in both videos: test confidence 0.25 and the
+  50-epoch detector.
+- Calibrate τ on a longer fixed-camera clip that includes idle periods.
 
 ---
 
 ## Compute
 
-Local development on a MacBook Pro (M4 Pro) via PyTorch MPS / Metal
-Performance Shaders; free Google Colab / Kaggle GPUs for heavier training.
+Local development and training on a MacBook Pro (Apple M4 Pro) with PyTorch
+MPS (Metal Performance Shaders); free Google Colab or Kaggle GPUs for heavier
+training.
 
 ---
 
-## How to run this notebook
+## How to run
+
+**Phase 0 notebook (Google Colab)**
 
 1. Open `notebooks/01_pretrained_demo.ipynb` in Google Colab:
    [Open in Colab](https://colab.research.google.com/github/icmoralesb/synthetic-data-for-construction-activity-recognition/blob/main/notebooks/01_pretrained_demo.ipynb)
 2. Set the runtime to GPU (*Runtime → Change runtime type → T4 GPU*).
-3. Runtime → Run all. It installs Ultralytics, loads a pretrained model, and
+3. *Runtime → Run all*. It installs Ultralytics, loads a pretrained model, and
    runs detection on a sample image and on a construction photo you upload.
 
-Local install:
+**Phase 1 (local)**
 
 ```bash
-pip install -r requirements.txt
+conda env create -f environment.yml
+conda activate construction-cv
+python scripts/active_idle_B.py
 ```
+
+Set the paths to the trained weights and to the video at the top of
+`scripts/active_idle_B.py`. Model weights and videos are not stored in this
+repository, because of their size and licences. Without conda, install the
+packages with `pip install -r requirements.txt`.
 
 ---
 
 ## Roadmap
 
-- [x] **Phase 0** — repo + pretrained-pipeline sanity check *(this commit)*
-- [ ] **Phase 1** (2–12 Oct 2026) — foundations + excavator detector, local training, tracking, active/idle demo
-- [ ] **Phase 2** (8–28 Oct 2026) — literature review + novelty check
-- [ ] **Phase 3** (15–29 Oct 2026) — synthetic pipeline in Blender (~2,000 clips)
-- [ ] **Phase 4** (1–8 Nov 2026) — real test set: 100–150 excavator clips labelled in CVAT
-- [ ] **Phase 5** (12–19 Nov 2026) — experiments and ablations (synthetic-only, real-only, mixed ratios)
+- [x] **Phase 0** (1 Oct 2026) — repository and pretrained-pipeline sanity check
+- [x] **Phase 1** (October 2026, tag `v0.1-phase1`) — excavator detector, tracking, active/idle demo
+- [ ] **Phase 2** (8–28 Oct 2026) — literature review and novelty check
+- [ ] **Phase 3** (15–29 Oct 2026) — synthetic pipeline in Blender (about 2,000 clips)
+- [ ] **Phase 4** (1–8 Nov 2026) — real data: about 800 clips from long public videos
+- [ ] **Phase 5** (9–19 Nov 2026) — experiments: synthetic only, real-data replacement and savings curves, zero-shot comparison
 - [ ] **Phase 6** (20 Nov – 10 Dec 2026) — paper writing (6–8 pages, LaTeX)
 - [ ] **★ Repository citable** (3 Dec 2026) — release v1.0: generator, dataset sample, results
 - [ ] **★ arXiv preprint submitted** (13 Dec 2026, buffer to 10 Jan 2027)
 
 ---
 
+## Use of AI tools
+
+Parts of the code and documentation in this repository, including the Phase 0
+notebook, were drafted with the help of an AI assistant (Claude, by
+Anthropic). I ran every script and notebook myself, and all reported results
+come from my own runs.
+
+---
+
 ## Author
 
-Iván Camilo Morales Buitrago — civil / cost engineer moving into applied
-computer vision for construction, applying for a research master's at the
-University of Technology Sydney.
+Iván Camilo Morales Buitrago — civil and cost engineer moving into applied
+computer vision for construction, preparing a research master's application
+for 2027.
 GitHub: [@icmoralesb](https://github.com/icmoralesb)
 
 ## Licence
