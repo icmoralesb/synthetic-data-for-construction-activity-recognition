@@ -21,13 +21,25 @@
 
 | Part | Separate object or bone? | Pivot at the real joint? | Notes |
 |---|---|---|---|
-| Upper structure (cab) — swing | | | |
-| Boom | | | |
-| Stick (arm) | | | |
-| Bucket | | | |
-| Tracks — travel | | | |
-| Hydraulic cylinders follow the joints | | | |
+| Upper structure (cab) — swing | Bone | Yes | |
+| Boom | Bone | Yes | |
+| Stick (arm) | Bone | Yes | |
+| Bucket | Bone | Yes | |
+| Tracks — travel | Bone | Yes | |
+| Hydraulic cylinders follow the joints | Bone | Yes | |
 
 - **Height at the cab (N panel → Item → Dimensions):** ____ m (a 20-tonne excavator is about 3 m)
 - **Triangles (Overlays → Statistics):** ____ (the Sketchfab page says about 667,000)
 - **Decision:** keep / replace with the fallback model
+
+## Control map
+
+| Activity | Control to move | How |
+|---|---|---|
+| Dig | Sphere + CO: Bucket | Sphere down and towards the cab; rotate CO: Bucket to curl the bucket |
+| Swing | Sphere | Along a circle around the cab; the cab follows on its own |
+| Dump | Sphere + CO: Bucket | Sphere up and out; rotate CO: Bucket to open the bucket |
+| Travel | CO: Master Movement | Move the whole machine |
+| Idle | None | Nothing moves |
+
+Swing is automatic: Pivot Main follows the sphere trhough a constraint. Do not totate it by hand.
