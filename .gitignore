@@ -8,3 +8,6 @@ data/
 *.pt
 runs/
 notes/
+
+# Old versions of the Blender scripts, kept on this computer only
+scripts/blender/archive/

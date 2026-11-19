@@ -1,3 +1,67 @@
+## 07-nov-26 - First synthetic clip: dig and swing in Blender (test 3)
+
+**Question**
+Can the Blender generator produce one dig and one loaded swing that a real excavator could perform, with an activity label in every frame?
+
+**Expected**
+- The bucket pin reaches its target at every frame.
+- Every joint stays inside the machine's physical limits (hydraulic cylinder strokes, bucket range against the stick).
+- The full bucket keeps its tip line (bucket pin to teeth tip) level during the lift and the swing.
+- Labels: dig, then swing.
+
+**Setup**
+- Model: "Excavator" by kurtismedia (Sketchfab), CC BY 4.0; the file is not stored in this repository (see `assets/excavator/SOURCE.md`).
+- Blender 4.2, Eevee Next renderer, 640 x 360 pixels.
+- Scripts: `scripts/blender/dig_swing.py` (test 3), `render_gif.py` (version 3), `make_gif_labels.py`.
+- Device: Apple M4 Pro.
+
+**Settings**
+- Seed 1, 25 frames per second. Phase durations drawn at random: reach 1.5-2.5 s, lower 1.0-2.0 s, fill 2.0-4.0 s, curl 0.6-1.2 s, lift 1.5-3.0 s, swing 3.0-6.0 s.
+- Phase ends (reach change in m, height change in m, bucket curl in degrees from rest): reach (5.0, 2.1, -76), lower (4.6, 0.25, -113), fill (3.3, -0.35, -96), curl (3.0, 0.2, -63), lift (1.25, 2.75, -70); then a 90-degree swing to the left.
+- Limits measured from the model: bucket curl from -146 degrees (bucket cylinder fully closed) to +22.75 degrees (the bucket's back touches the stick), used with a 5-degree margin; cylinder strokes from the barrel and rod meshes, with at least 0.15 m of rod inside the barrel and 0.05 m from the barrel bottom.
+- Pit 4.3-10.4 m in front of the swing axis, 2.6 m wide, 1.2 m deep; the bucket may cut 0.30 m into the pit floor.
+- Rendered every second frame: 180 pictures; GIF at 12.5 pictures per second.
+
+**Results** (from `data/renders/dig_swing_report.txt`: "RESULT: all checks passed")
+
+| Check (every frame) | Result | Allowed |
+|---|---|---|
+| Bucket pin against its target | largest gap 0.0 cm | under 2 cm |
+| Bucket curl from rest | -112.9 to 0.0 degrees | -141.0 to +17.8 degrees |
+| Boom cylinder length | 2.50-3.43 m | 2.46-3.99 m |
+| Stick cylinder length | 3.33-4.52 m | 2.94-5.00 m |
+| Bucket cylinder length | 2.76-3.54 m | 2.41-3.98 m |
+| Bucket links folded to the wrong side | 0 frames | 0 |
+| Bucket clearance to the ground or pit floor | 0.04 m (frame 176) | above 0 |
+| Stick clearance to the ground or pit floor | 0.32 m (frame 1) | above 0 |
+| Tip line during the lift and swing (frames 195-360) | at most +2.1 degrees from level | 5 degrees |
+| Bucket twist against the stick during the swing | 0.5 degrees | under 3 degrees |
+
+- Durations: dig 10.00 s (reach 1.64, lower 1.84, fill 3.52, curl 0.76, lift 2.24 s); swing 90 degrees in 4.36 s (average 20.6 degrees/s, top 32.4 degrees/s).
+- Labels: dig = frames 1-251 (0.00-10.04 s); swing = frames 252-360 (10.04-14.40 s).
+
+**Observations**
+- In the 180 pictures the bucket digs into the pit, closes until its tip line is level, lifts out and swings; no part passes through another, and the machine stays inside the picture.
+
+**History: tests 1 and 2**
+- Test 1: the lift target was inside the arm's inner reach limit (boom length minus stick length = 3.74 m; the target was 3.32 m from the boom foot), so the bucket pin missed it by 42 cm. A 90-degree swing also twisted the bucket 32.8 degrees against the stick; setting the bucket's Copy Rotation mix to "After Original" (in memory only) removed the twist (0.0 degrees, `rig_check_2.py`, 3 Nov).
+- Test 2 (3-4 Nov): every check passed, but the preview pictures showed the bucket passing through the stick. The curl values (+30 and +60 degrees) were measured from the rest pose, which is the transport pose with the bucket almost fully closed: only +22.75 degrees of closing were left. At frame 42 the bucket pin was 1.0 m under a flat ground, so only the teeth showed. Lesson: test 2 checked that the rig did what we asked, not that what we asked was physically possible.
+- Test 3 changes: limits measured from the model and checked at every frame; a pit; a separate curl phase; and the carry rule from site practice (tip line level, so wet material does not spill). A carry with level teeth was designed first and rejected after review, because the opening would still lean 43 degrees towards the machine.
+
+**Interpretation**
+- Answer: yes, for one dig and one swing. Every frame passed the physical checks, and the labels come from the script, not from a person.
+- The closest margin is the bucket's cut into the pit floor at the end of the fill (0.26 m of the 0.30 m allowed). Other seeds change only the speed, not the path, so this margin stays the same.
+
+**Limitations**
+- One machine, one camera, one seed, two activities; the bucket is empty (no soil model); no bounding boxes or masks yet; the far edge of the ground shows at the top right.
+- The limits come from the model's own geometry, which may differ from a real excavator of the same size.
+
+**Next steps**
+- Export bounding boxes and masks for every frame.
+- Randomise camera, lighting, weather and background.
+- Add the dump, travel and idle activities, then render the first batch of clips.
+
+
 ## 14-oct-26 - Active vs. idle from tracked-box movement
 
 **Question**

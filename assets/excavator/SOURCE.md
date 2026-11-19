@@ -11,11 +11,11 @@
 
 ## Attribution line (use it in the README, the dataset and the paper)
 
-"Excavator" by kurtismedia (https://sketchfab.com/3d-models/excavator-f2a569f2a2f64a079cc353fa4d4a74f1), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified for this project: rigged and animated in Blender to generate synthetic training video.
+"Excavator" by kurtismedia (https://sketchfab.com/3d-models/excavator-f2a569f2a2f64a079cc353fa4d4a74f1), licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Modified for this project: animated with Python scripts in Blender to generate synthetic training video.
 
 ## Changes made in this project
 
-- (add one line per change, with the date — for example: "2026-10-22: added a cab-swing bone")
+- 2026-11-03: the .blend file itself is unchanged. At run time, `scripts/blender/dig_swing.py` sets the Copy Rotation constraint on the bone Bucket Main from mix "Replace" to "After Original" (in memory only, never saved). Reason: with "Replace", a 90° swing twisted the bucket 32.8° against the stick; with "After Original" the twist was 0.0° (rig_check_2.py report, 3 Nov 2026).
 
 ## Parts check (fill in after opening the file in Blender 4.2.1)
 
